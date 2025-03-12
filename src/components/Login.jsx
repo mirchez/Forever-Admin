@@ -15,7 +15,7 @@ const Login = ({ setToken }) => {
       );
 
       if (response.data.success) {
-        setToken(response.data.token);
+        setToken(JSON.stringify(response.data.token));
       } else {
         toast.error("Not valid credentials");
       }

@@ -184,6 +184,7 @@ const Add = ({ token }) => {
             type="number"
             placeholder="25"
             className="w-full px-3 py-[6px] sm:w-[120px]"
+            min="1"
           />
         </div>
       </div>
