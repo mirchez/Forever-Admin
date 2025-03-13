@@ -3,8 +3,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 const Login = ({ setToken }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@forever.com");
+  const [password, setPassword] = useState("adminpass");
 
   const onSubmitHandler = async (e) => {
     try {
@@ -15,7 +15,7 @@ const Login = ({ setToken }) => {
       );
 
       if (response.data.success) {
-        setToken(JSON.stringify(response.data.token));
+        setToken(response.data.token);
       } else {
         toast.error("Not valid credentials");
       }

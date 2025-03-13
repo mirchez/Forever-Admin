@@ -2,17 +2,15 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { currency } from "../App";
-
 const List = ({ token }) => {
   const [list, setList] = useState([]);
-
   const fetchList = async () => {
     try {
       const response = await axios.get(
         import.meta.env.VITE_BACKEND_URL + "/api/product/list"
       );
       if (response.data.success) {
-        setList(response.data.product);
+        setList(response.data.products);
       } else {
         toast.error(response.data.message);
       }
@@ -58,7 +56,7 @@ const List = ({ token }) => {
         <b>Price</b>
         <b className="text-center">Action</b>
       </div>
-      {/*-----------Product List----------- */}
+      {/* -----------Product List----------- */}
       {list.map((item, idx) => (
         <div
           key={idx}

@@ -4,6 +4,11 @@
 * {
   font-family: "Outfit", sans-serif;
 }
+
+body {
+  background-color: #f9fafb;
+}
+
 .active {
   background-color: #ffebf5;
   border-color: #c586a5;
