@@ -54,7 +54,7 @@ const Orders = ({ token }) => {
 
   return (
     <div>
-      <h3>Order Page</h3>
+      <h3>Pedidos</h3>
 
       <div>
         {orders.map((order, idx) => (
@@ -100,11 +100,11 @@ const Orders = ({ token }) => {
 
             <div>
               <p className="text-sm sm:text-[15px]">
-                Items : {order.items.length}
+                Productos: {order.items.length}
               </p>
-              <p className="mt-3">Method : {order.paymentMethod}</p>
-              <p>Payment : {order.payment ? "Done " : " Pending "}</p>
-              <p>Date : {new Date(order.date).toLocaleDateString()}</p>
+              <p className="mt-3">Método: {order.paymentMethod}</p>
+              <p>Pago: {order.payment ? "Pagado" : "Pendiente"}</p>
+              <p>Fecha: {new Date(order.date).toLocaleDateString()}</p>
             </div>
 
             <p className="text-sm sm:text-[15px]">
@@ -116,11 +116,11 @@ const Orders = ({ token }) => {
               value={order.status}
               className="p-2 font-semibold"
             >
-              <option value="Order Placed">Order Placed</option>
-              <option value="Packing">Packing</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Out for delivery">Out for delivery</option>
-              <option value="Delivered">Delivered</option>
+              <option value="Pedido realizado">Pedido realizado</option>
+              <option value="Empacando">Empacando</option>
+              <option value="Enviado">Enviado</option>
+              <option value="En reparto">En reparto</option>
+              <option value="Entregado">Entregado</option>
             </select>
           </div>
         ))}

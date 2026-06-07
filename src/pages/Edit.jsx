@@ -1,31 +1,63 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { assets } from "../assets/assets.js";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { usePreset } from "../context/PresetContext";
 
-const Add = ({ token }) => {
+const Edit = ({ token }) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const { preset } = usePreset();
-  //product images
+  //imágenes nuevas (File) — si quedan en false se conserva la existente
   const [image1, setImage1] = useState(false);
   const [image2, setImage2] = useState(false);
   const [image3, setImage3] = useState(false);
   const [image4, setImage4] = useState(false);
-  //product caracteristics
+  //URLs actuales del producto
+  const [existingImages, setExistingImages] = useState([]);
+  //datos del producto
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
-  const [category, setCategory] = useState(preset.taxonomy.categories[0]);
-  const [subCategory, setSubCategory] = useState(preset.taxonomy.subCategories[0]);
+  const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const [bestseller, setBestseller] = useState(false);
   const [sizes, setSizes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // When preset changes, reset selected category/subcategory/sizes to valid values
+  const fetchProduct = async () => {
+    try {
+      const response = await axios.post(
+        import.meta.env.VITE_BACKEND_URL + "/api/product/single",
+        { productId: id }
+      );
+      if (response.data.success && response.data.product) {
+        const p = response.data.product;
+        setName(p.name);
+        setDescription(p.description);
+        setPrice(p.price);
+        setCategory(p.category);
+        setSubCategory(p.subCategory);
+        setBestseller(!!p.bestseller);
+        setSizes(p.sizes || []);
+        setExistingImages(p.image || []);
+      } else {
+        toast.error("Producto no encontrado");
+        navigate("/list");
+      }
+    } catch (error) {
+      console.log(error.message);
+      toast.error("Error al cargar el producto");
+      navigate("/list");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setCategory(preset.taxonomy.categories[0]);
-    setSubCategory(preset.taxonomy.subCategories[0]);
-    setSizes([]);
-  }, [preset.key]);
+    fetchProduct();
+  }, [id]);
 
   const toggleSize = (s) => {
     setSizes((prev) =>
@@ -37,6 +69,7 @@ const Add = ({ token }) => {
     e.preventDefault();
     try {
       const formData = new FormData();
+      formData.append("id", id);
       formData.append("name", name);
       formData.append("description", description);
       formData.append("price", price);
@@ -45,26 +78,24 @@ const Add = ({ token }) => {
       formData.append("bestseller", bestseller);
       formData.append("sizes", JSON.stringify(sizes));
 
-      image1 && formData.append("image1", image1);
-      image2 && formData.append("image2", image2);
-      image3 && formData.append("image3", image3);
-      image4 && formData.append("image4", image4);
+      const newImages = [image1, image2, image3, image4];
+      newImages.forEach((img, idx) => {
+        if (img) {
+          formData.append(`image${idx + 1}`, img);
+        } else if (existingImages[idx]) {
+          formData.append(`existingImage${idx + 1}`, existingImages[idx]);
+        }
+      });
 
       const response = await axios.post(
-        import.meta.env.VITE_BACKEND_URL + "/api/product/add",
+        import.meta.env.VITE_BACKEND_URL + "/api/product/update",
         formData,
         { headers: { token } }
       );
 
       if (response.data.success) {
-        toast.success("Producto agregado correctamente");
-        setName("");
-        setDescription("");
-        setPrice("");
-        setImage1(false);
-        setImage2(false);
-        setImage3(false);
-        setImage4(false);
+        toast.success("Producto actualizado correctamente");
+        navigate("/list");
       } else {
         toast.error(response.data.message);
       }
@@ -74,30 +105,42 @@ const Add = ({ token }) => {
     }
   };
 
+  if (loading) {
+    return <p className="text-gray-500">Cargando producto...</p>;
+  }
+
+  const imageSlots = [
+    [image1, setImage1, "image1", 0],
+    [image2, setImage2, "image2", 1],
+    [image3, setImage3, "image3", 2],
+    [image4, setImage4, "image4", 3],
+  ];
+
   return (
     <form
       onSubmit={onSubmitHandler}
       className="flex flex-col w-full items-start gap-3 md:p-0 px-2"
     >
       <div>
-        <p className="mb-2">Subir imagen</p>
+        <p className="mb-2">
+          Imágenes <span className="text-gray-400 text-sm">(clic para reemplazar)</span>
+        </p>
         <div className="flex gap-2 ">
-          {[
-            [image1, setImage1, "image1"],
-            [image2, setImage2, "image2"],
-            [image3, setImage3, "image3"],
-            [image4, setImage4, "image4"],
-          ].map(([img, setImg, id]) => (
-            <label key={id} htmlFor={id}>
+          {imageSlots.map(([img, setImg, slotId, idx]) => (
+            <label key={slotId} htmlFor={slotId}>
               <img
-                src={!img ? assets.upload_area : URL.createObjectURL(img)}
-                alt="upload image"
-                className="w-20"
+                src={
+                  img
+                    ? URL.createObjectURL(img)
+                    : existingImages[idx] || assets.upload_area
+                }
+                alt="product image"
+                className="w-20 h-20 object-cover border border-gray-300 cursor-pointer"
               />
               <input
                 onChange={(e) => setImg(e.target.files[0])}
                 type="file"
-                id={id}
+                id={slotId}
                 hidden
               />
             </label>
@@ -111,7 +154,6 @@ const Add = ({ token }) => {
           onChange={(e) => setName(e.target.value)}
           value={name}
           type="text"
-          placeholder="Escribí aquí"
           required
           className="w-full max-w-[500px] px-3 py-2"
         />
@@ -122,7 +164,6 @@ const Add = ({ token }) => {
         <textarea
           onChange={(e) => setDescription(e.target.value)}
           value={description}
-          placeholder="Escribí el contenido aquí"
           required
           className="w-full max-w-[500px] px-3 py-2 min-h-[120px] resize-none"
         />
@@ -136,11 +177,13 @@ const Add = ({ token }) => {
             onChange={(e) => setCategory(e.target.value)}
             value={category}
           >
-            {preset.taxonomy.categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
+            {[...new Set([category, ...preset.taxonomy.categories])]
+              .filter(Boolean)
+              .map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
           </select>
         </div>
 
@@ -151,11 +194,13 @@ const Add = ({ token }) => {
             onChange={(e) => setSubCategory(e.target.value)}
             value={subCategory}
           >
-            {preset.taxonomy.subCategories.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
+            {[...new Set([subCategory, ...preset.taxonomy.subCategories])]
+              .filter(Boolean)
+              .map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
           </select>
         </div>
 
@@ -165,7 +210,6 @@ const Add = ({ token }) => {
             onChange={(e) => setPrice(e.target.value)}
             value={price}
             type="number"
-            placeholder="25"
             className="w-full px-3 py-[6px] sm:w-[120px]"
             min="1"
           />
@@ -175,7 +219,7 @@ const Add = ({ token }) => {
       <div>
         <p className="mb-2">{preset.taxonomy.sizeLabel}</p>
         <div className="flex gap-3 flex-wrap">
-          {preset.taxonomy.sizes.map((s) => (
+          {[...new Set([...sizes, ...preset.taxonomy.sizes])].map((s) => (
             <div key={s} onClick={() => toggleSize(s)}>
               <p
                 className={`${
@@ -201,14 +245,23 @@ const Add = ({ token }) => {
         </label>
       </div>
 
-      <button
-        type="submit"
-        className="w-28 py-3 mt-4 bg-black text-white hover:scale-95 hover:rounded-sm transition duration-200 ease-in mx-auto md:mx-0"
-      >
-        AGREGAR
-      </button>
+      <div className="flex gap-3 mt-4 mx-auto md:mx-0">
+        <button
+          type="submit"
+          className="w-28 py-3 bg-black text-white hover:scale-95 hover:rounded-sm transition duration-200 ease-in"
+        >
+          GUARDAR
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/list")}
+          className="w-28 py-3 border border-gray-400 text-gray-600 hover:scale-95 hover:rounded-sm transition duration-200 ease-in"
+        >
+          CANCELAR
+        </button>
+      </div>
     </form>
   );
 };
 
-export default Add;
+export default Edit;
