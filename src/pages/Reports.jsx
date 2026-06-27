@@ -3,11 +3,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { currency } from "../App";
-import { usePreset } from "../context/PresetContext";
 
 const Reports = ({ token }) => {
-  const { preset } = usePreset();
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const today = new Date().toISOString().slice(0, 10);
@@ -36,8 +33,9 @@ const Reports = ({ token }) => {
     fetchData();
   }, [token]);
 
+  // La fuente de jsPDF no incluye el glifo ₲; en los PDF se usa "Gs."
   const money = (n) =>
-    `${currency}${Number(n || 0).toLocaleString("es-PY", {
+    `Gs. ${Number(n || 0).toLocaleString("es-PY", {
       maximumFractionDigits: 0,
     })}`;
 
