@@ -20,6 +20,7 @@ const Edit = ({ token }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
+  const [stock, setStock] = useState(0);
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [bestseller, setBestseller] = useState(false);
@@ -37,6 +38,7 @@ const Edit = ({ token }) => {
         setName(p.name);
         setDescription(p.description);
         setPrice(p.price);
+        setStock(p.stock || 0);
         setCategory(p.category);
         setSubCategory(p.subCategory);
         setBestseller(!!p.bestseller);
@@ -76,6 +78,7 @@ const Edit = ({ token }) => {
       formData.append("category", category);
       formData.append("subCategory", subCategory);
       formData.append("bestseller", bestseller);
+      formData.append("stock", stock);
       formData.append("sizes", JSON.stringify(sizes));
 
       const newImages = [image1, image2, image3, image4];
@@ -212,6 +215,17 @@ const Edit = ({ token }) => {
             type="number"
             className="w-full px-3 py-[6px] sm:w-[120px]"
             min="1"
+          />
+        </div>
+
+        <div>
+          <p className="mb-2">Stock</p>
+          <input
+            onChange={(e) => setStock(e.target.value)}
+            value={stock}
+            type="number"
+            className="w-full px-3 py-[6px] sm:w-[120px]"
+            min="0"
           />
         </div>
       </div>

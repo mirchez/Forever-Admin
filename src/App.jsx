@@ -5,6 +5,7 @@ import Add from "./pages/Add";
 import Edit from "./pages/Edit";
 import List from "./pages/List";
 import Orders from "./pages/Orders";
+import Reports from "./pages/Reports";
 import { useEffect, useState } from "react";
 import Login from "./components/Login";
 import { ToastContainer } from "react-toastify";
@@ -36,6 +37,7 @@ const App = () => {
                 <Route path="/edit/:id" element={<Edit token={token} />} />
                 <Route path="/list" element={<List token={token} />} />
                 <Route path="/orders" element={<Orders token={token} />} />
+                <Route path="/reports" element={<Reports token={token} />} />
               </Routes>
             </div>
           </div>

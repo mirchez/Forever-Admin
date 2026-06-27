@@ -80,18 +80,19 @@ const List = ({ token }) => {
           )}
         </label>
       </div>
-      <div className="hidden md:grid grid-cols-[1fr_3fr_1fr_1fr_1fr] items-center py-1 px-2 border border-gray-300 bg-gray-100 text-sm">
+      <div className="hidden md:grid grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr] items-center py-1 px-2 border border-gray-300 bg-gray-100 text-sm">
         <b>Imagen</b>
         <b>Nombre</b>
         <b>Categoría</b>
         <b>Precio</b>
+        <b className="text-center">Stock</b>
         <b className="text-center">Acción</b>
       </div>
       {/* -----------Product List----------- */}
       {visibleList.map((item, idx) => (
         <div
           key={idx}
-          className="grid grid-cols-[1fr_3fr_1fr] md:grid-cols-[1fr_3fr_1fr_1fr_1fr] items-center gap-2 py-1 px-2 border border-gray-300 text-sm"
+          className="grid grid-cols-[1fr_3fr_1fr_1fr] md:grid-cols-[1fr_3fr_1fr_1fr_1fr_1fr] items-center gap-2 py-1 px-2 border border-gray-300 text-sm"
         >
           <img src={item.image} alt="product image" className="w-12" />
           <p>{item.name}</p>
@@ -99,6 +100,9 @@ const List = ({ token }) => {
           <p>
             {currency}
             {Number(item.price).toLocaleString("es-PY")}
+          </p>
+          <p className={`text-center ${Number(item.stock) === 0 ? "text-red-500 font-medium" : ""}`}>
+            {item.stock ?? 0}
           </p>
           <div className="flex items-center justify-end md:justify-center gap-4">
             <p
